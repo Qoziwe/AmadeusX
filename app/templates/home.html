@@ -1,0 +1,126 @@
+{% extends "base.html" %} {% block title %}Главная{% endblock %} {% block
+content %}
+<div class="home">
+  <div class="home__header">
+    <div class="logo">
+      <div class="logo__icon">🔒</div>
+      <span class="logo__text">AmadeusX</span>
+    </div>
+    <a href="{{ url_for('profile') }}">
+      <div class="home__user">
+        <span>{{ current_user.username }}</span> {% if current_user.avatar_url
+        %}
+        <img
+          src="{{ current_user.avatar_url }}"
+          alt="Аватар {{ current_user.username }}"
+          class="home__user-avatar"
+        />
+        {% else %}
+        <div
+          class="home__user-avatar home__user-avatar--placeholder"
+          data-initials="{{ current_user.username[0].upper() }}"
+        ></div>
+        {% endif %}
+      </div>
+    </a>
+  </div>
+
+  <div class="home__content">
+    <div class="home__section">
+      <h2 class="home__section-title">Найти пользователя</h2>
+      <div class="search-bar">
+        <input
+          type="text"
+          id="user-search-input"
+          class="search-bar__input"
+          placeholder="Поиск по имени пользователя..."
+        />
+        <button id="user-search-button" class="search-bar__button">
+          Найти
+        </button>
+      </div>
+      <div id="search-results" class="user-list">
+        <!-- Результаты поиска будут здесь -->
+      </div>
+    </div>
+
+    <div class="home__section">
+      <h2 class="home__section-title">Входящие приглашения</h2>
+      <div id="pending-invitations" class="invitation-list">
+        {% if pending_invitations %} {% for invitation in pending_invitations %}
+        <div class="invitation-card" data-invitation-id="{{ invitation.id }}">
+          <div class="invitation-card__info">
+            {# ОТОБРАЖЕНИЕ АВАТАРА ОТПРАВИТЕЛЯ ПРИГЛАШЕНИЯ #} {% if
+            invitation.sender.avatar_url %}
+            <img
+              src="{{ invitation.sender.avatar_url }}"
+              alt="Аватар {{ invitation.sender.username }}"
+              class="invitation-card__avatar"
+            />
+            {% else %}
+            <div
+              class="invitation-card__avatar"
+              data-initials="{{ invitation.sender.username[0].upper() }}"
+            ></div>
+            {% endif %}
+            <span class="invitation-card__username"
+              >{{ invitation.sender.username }}</span
+            >
+          </div>
+          <div class="invitation-card__actions">
+            <button class="btn btn--primary invitation-card__accept-btn">
+              Создать беседу
+            </button>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <p class="home__empty-state" id="no-invitations-message">
+          Нет новых приглашений.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="home__section">
+      <h2 class="home__section-title">Ваши чаты</h2>
+      <div id="user-chats" class="chat-list">
+        {% if user_chats %} {% for chat in user_chats %}
+        <a
+          href="{{ url_for('chat_page', chat_id=chat.id) }}"
+          class="chat-card"
+          data-chat-id="{{ chat.id }}"
+        >
+          <div class="chat-card__info">
+            {# ОТОБРАЖЕНИЕ АВАТАРА СОБЕСЕДНИКА В СПИСКЕ ЧАТОВ #} {% set
+            other_user_in_chat = chat.user1 if chat.user2_id == current_user.id
+            else chat.user2 %} {% if other_user_in_chat.avatar_url %}
+            <img
+              src="{{ other_user_in_chat.avatar_url }}"
+              alt="Аватар {{ other_user_in_chat.username }}"
+              class="chat-card__avatar"
+            />
+            {% else %}
+            <div
+              class="chat-card__avatar"
+              data-initials="{{ other_user_in_chat.username[0].upper() }}"
+            ></div>
+            {% endif %}
+            <span class="chat-card__username">
+              {% if chat.user1_id == current_user.id %} {{ chat.user2.username
+              }} {% else %} {{ chat.user1.username }} {% endif %}
+            </span>
+          </div>
+          <div class="chat-card__action">
+            <span class="chat-card__enter-text">Войти в чат</span>
+          </div>
+        </a>
+        {% endfor %} {% else %}
+        <p class="home__empty-state" id="no-chats-message">
+          У вас пока нет активных чатов.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %} {% block title %}Авторизация{% endblock %} {% block
+content %}
+<div class="auth">
+  <div class="auth__background">
+    <div class="auth__particles"></div>
+  </div>
+
+  <div class="auth__container">
+    <div class="auth__card">
+      <div class="auth__header">
+        <div class="logo">
+          <div class="logo__icon">🔒</div>
+          <span class="logo__text">AmadeusX</span>
+        </div>
+      </div>
+
+      <div class="auth__tabs">
+        <button class="auth__tab auth__tab--active" data-tab="login">
+          Вход
+        </button>
+        <button class="auth__tab" data-tab="register">Регистрация</button>
+      </div>
+
+      <!-- Форма входа -->
+      <div class="auth__form auth__form--active" id="login-form">
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="form-group">
+            <label class="form-group__label">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Пароль</label>
+            <input
+              type="password"
+              name="password"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--full">
+            <span class="btn__text">Войти</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Форма регистрации -->
+      <div class="auth__form" id="register-form">
+        <form method="POST" action="{{ url_for('register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="form-group">
+            <label class="form-group__label">Имя пользователя</label>
+            <input
+              type="text"
+              name="username"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Пароль</label>
+            <input
+              type="password"
+              name="password"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Подтвердите пароль</label>
+            <input
+              type="password"
+              name="confirm_password"
+              class="form-group__input"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--full">
+            <span class="btn__text">Зарегистрироваться</span>
+          </button>
+        </form>
+      </div>
+
+      {% with messages = get_flashed_messages() %} {% if messages %}
+      <div class="auth__messages">
+        {% for message in messages %}
+        <div class="message message--error">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+    </div>
+  </div>
+</div>
+{% endblock %}

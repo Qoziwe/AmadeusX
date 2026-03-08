@@ -1,0 +1,76 @@
+{% extends "base.html" %} {% block title %}Добро пожаловать{% endblock %} {%
+block content %}
+<div class="welcome">
+  <div class="welcome__background">
+    <div class="welcome__particles"></div>
+  </div>
+
+  <div class="welcome__container">
+    <div class="welcome__content">
+      <div class="welcome__logo">
+        <div class="logo">
+          <div class="logo__icon">🔒</div>
+          <span class="logo__text">AmadeusX</span>
+        </div>
+      </div>
+
+      <div class="welcome__hero">
+        <h1 class="welcome__title">
+          <span class="welcome__title-line">Безопасное</span>
+          <span class="welcome__title-line welcome__title-line--accent"
+            >Зашифрованное</span
+          >
+          <span class="welcome__title-line">Общение</span>
+        </h1>
+
+        <p class="welcome__subtitle">
+          Ваши сообщения защищены end-to-end шифрованием. Никто, кроме вас и
+          получателя, не сможет их прочитать.
+        </p>
+
+        <div class="welcome__features">
+          <div class="feature">
+            <div class="feature__icon">🛡️</div>
+            <span class="feature__text">End-to-End шифрование</span>
+          </div>
+          <div class="feature">
+            <div class="feature__icon">🔐</div>
+            <span class="feature__text">Приватность данных</span>
+          </div>
+          <div class="feature">
+            <div class="feature__icon">✅</div>
+            <span class="feature__text">Безопасная передача</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="welcome__actions">
+        <a href="{{ url_for('auth') }}" class="btn btn--primary">
+          <span class="btn__text">Начать общение</span>
+        </a>
+
+        <div class="welcome__auth-links">
+          <span class="welcome__auth-text">Уже есть аккаунт?</span>
+          <a href="{{ url_for('auth') }}?mode=login" class="welcome__auth-link"
+            >Войти</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="welcome__visual">
+      <div class="encryption-demo">
+        <div class="encryption-demo__message">
+          <div class="message">Привет! Как дела?</div>
+        </div>
+        <div class="encryption-demo__arrow">→</div>
+        <div
+          class="encryption-demo__message encryption-demo__message--encrypted"
+        >
+          <div class="message message--encrypted">aGk3mP9xQ2vL8nR5...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends "base.html" %} {% block title %}Чат с {{ other_user.username }}{%
+endblock %} {% block content %}
+<div class="chat-page">
+  <div class="chat-page__header">
+    <a href="{{ url_for('home') }}" class="chat-page__back-btn">← Назад</a>
+    <h2 class="chat-page__title">
+      {% if other_user.avatar_url %}
+      <img
+        src="{{ other_user.avatar_url }}"
+        alt="Аватар {{ other_user.username }}"
+        class="chat-page__other-user-avatar"
+      />
+      {% else %}
+      <div
+        class="chat-page__other-user-avatar chat-page__other-user-avatar--placeholder"
+        data-initials="{{ other_user.username[0].upper() }}"
+      ></div>
+      {% endif %}{{ other_user.username }}
+    </h2>
+
+    <!-- Отпечаток ключа (эмодзи) -->
+    <div class="key-fingerprint" id="key-fingerprint-display">
+      <span class="key-fingerprint__emojis" id="key-fingerprint-emojis"></span>
+      <span class="key-fingerprint__label">🔑 Отпечаток</span>
+      <span class="key-fingerprint__tooltip">Сверьте эти эмодзи с собеседником по телефону.<br>Если совпадают — ключи одинаковы, канал безопасен.</span>
+    </div>
+
+    <!-- Добавляем кнопку меню -->
+    <div class="chat-menu">
+      <button class="chat-menu__toggle">⋮</button>
+      <div class="chat-menu__dropdown">
+        <button id="change-key-button" class="chat-menu__item">
+          Сменить ключ
+        </button>
+        <button id="toggle-ephemeral" class="ephemeral-toggle chat-menu__item">
+          🔥 Исчезающие сообщения
+          <span class="ephemeral-toggle__status" id="ephemeral-status">Выкл</span>
+        </button>
+        <button
+          id="delete-chat-button"
+          class="chat-menu__item chat-menu__item--danger"
+        >
+          Удалить чат
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-page__messages" id="chat-messages">
+    {% for message in messages %}
+    <div
+      class="message-wrapper {% if message.sender_id == current_user.id %}message-wrapper--sent{% else %}message-wrapper--received{% endif %}"
+    >
+      {# Аватар отправителя сообщения #}
+      <div class="message-bubble__avatar-container">
+        {% if message.message_sender.avatar_url %}
+        <img
+          src="{{ message.message_sender.avatar_url }}"
+          alt="Аватар {{ message.message_sender.username }}"
+          class="message-bubble__avatar"
+        />
+        {% else %}
+        <div
+          class="message-bubble__avatar message-bubble__avatar--placeholder"
+          data-initials="{{ message.message_sender.username[0].upper() }}"
+        ></div>
+        {% endif %}
+      </div>
+      <div
+        class="message-bubble {% if message.sender_id == current_user.id %}message-bubble--sent{% else %}message-bubble--received{% endif %}"
+        data-message-id="{{ message.id }}"
+      >
+        <div class="message-bubble__sender">
+          {{ message.message_sender.username }}
+        </div>
+        <div
+          class="message-bubble__content"
+          data-encrypted-content="{{ message.content }}"
+          data-message-type="{{ message.message_type }}"
+        >
+          {% if message.message_type == 'text' %}
+          <span class="decrypted-text">Загрузка...</span>
+          {% elif message.message_type == 'audio' %}
+          <div class="audio-player">
+            <button class="audio-player__play-btn">▶️</button>
+            <span class="audio-player__time">0:00</span>
+            <audio class="audio-player__audio" preload="none"></audio>
+          </div>
+          {% endif %}
+        </div>
+        <div class="message-bubble__time">
+          {{ message.timestamp.strftime('%H:%M') }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Индикатор печатания #}
+  <div class="typing-indicator" id="typing-indicator" style="display: none">
+    <span class="typing-indicator__text"
+      >{{ other_user.username }} печатает...</span
+    >
+    <div class="typing-indicator__dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <div class="chat-page__input-area">
+    <button
+      id="record-audio-button"
+      class="btn btn--secondary chat-page__record-btn"
+    >
+      🎤 Запись
+    </button>
+    <button
+      id="stop-recording-button"
+      class="btn btn--secondary chat-page__stop-record-btn"
+      style="display: none"
+    >
+      ⏹️ Стоп
+    </button>
+    <span
+      id="recording-timer"
+      class="chat-page__recording-timer"
+      style="display: none"
+      >0:00</span
+    >
+    <input
+      type="text"
+      id="message-input"
+      class="chat-page__input"
+      placeholder="Введите сообщение..."
+    />
+    <button
+      id="send-message-button"
+      class="btn btn--primary chat-page__send-btn"
+    >
+      ➤
+    </button>
+  </div>
+</div>
+
+<!-- Оверлей блокировки сессии -->
+<div class="session-lock-overlay" id="session-lock-overlay">
+  <div class="session-lock-overlay__icon">🔒</div>
+  <div class="session-lock-overlay__title">Сессия заблокирована</div>
+  <div class="session-lock-overlay__text">
+    Ваш ключ шифрования был удалён из памяти из-за неактивности.
+    Все сообщения на экране скрыты. Введите ключ для продолжения.
+  </div>
+  <button class="btn btn--primary session-lock-overlay__btn" id="session-unlock-btn">
+    Ввести ключ
+  </button>
+</div>
+
+<div id="chat-config" style="display:none"
+     data-chat-id="{{ chat.id }}"
+     data-current-user-id="{{ current_user.id }}"
+     data-other-user-id="{{ other_user.id }}"
+     data-current-user-avatar="{{ current_user_avatar_url | default('') }}"
+     data-other-user-avatar="{{ other_user_avatar_url | default('') }}"></div>
+{% endblock %}
