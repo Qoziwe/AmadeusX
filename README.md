@@ -1,7 +1,3 @@
-Here is the English translation of your README. I kept the formatting, ASCII art, and technical terminology accurate and professional.
-
---- START OF FILE ---
-
 # 🔒 AmadeusX
 
 **AmadeusX** is a web messenger with client-side End-to-End Encryption (E2EE), built on Flask, Socket.IO, and the Web Crypto API. The server never sees the content of the messages — it only stores encrypted text, and the encryption keys exist exclusively in the RAM of the user's browser.
@@ -747,5 +743,3 @@ For maximum protection, it is recommended to combine several methods:
 ## 📝 License
 
 This project was created for educational purposes to study the principles of cryptography, web application security, and Zero-Knowledge system architecture.
-
---- END OF FILE ---
