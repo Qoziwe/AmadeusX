@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: amadeusx-web
+    env: python
+    buildCommand: "pip install -r app/requirements.txt"
+    startCommand: "cd app && gunicorn --worker-class gthread --workers 1 --threads 100 app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URI
+        fromDatabase:
+          name: amadeusx-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: "https://amadeusx-web.onrender.com"
+      - key: FORCE_HTTPS
+        value: "True"
+      - key: COOKIE_SECURE
+        value: "True"
+      - key: FLASK_DEBUG
+        value: "False"
+
+databases:
+  - name: amadeusx-db
+    databaseName: amadeusx
+    user: amadeusx_user
+    plan: free
