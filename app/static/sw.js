@@ -2,7 +2,7 @@
 // Этот Service Worker кеширует scripts.js и проверяет его целостность при обновлениях.
 // Если сервер скомпрометирован и JS подменён, SW заблокирует загрузку.
 
-const CACHE_NAME = 'securchat-integrity-v1';
+const CACHE_NAME = 'securchat-integrity-v3';
 const CRITICAL_SCRIPTS = ['/static/scripts/scripts.js'];
 
 // При установке: кешируем текущий scripts.js и сохраняем его хеш
