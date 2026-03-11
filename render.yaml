@@ -2,6 +2,7 @@ services:
   - type: web
     name: amadeusx-web
     env: python
+    plan: free
     buildCommand: "pip install -r app/requirements.txt"
     startCommand: "cd app && gunicorn --worker-class gthread --workers 1 --threads 100 app:app"
     envVars:
