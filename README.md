@@ -120,7 +120,7 @@
 | Flask-Limiter 3.5 | Rate Limiting |
 | Flask-Talisman 1.1 | Security headers (CSP, HSTS) |
 | psycopg2 | PostgreSQL driver |
-| python-magic | MIME validation for uploads |
+| filetype | MIME validation for uploads |
 | python-dotenv | Environment variables loader |
 
 ### Frontend

@@ -4,7 +4,7 @@ import uuid
 import hashlib
 import base64
 import logging
-import magic
+import filetype
 from datetime import datetime, timedelta
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_from_directory
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
@@ -173,8 +173,8 @@ def validate_file_content(file_stream):
     """Проверка MIME-типа файла по содержимому (magic bytes)."""
     header = file_stream.read(2048)
     file_stream.seek(0)
-    mime_type = magic.from_buffer(header, mime=True)
-    return mime_type in ALLOWED_MIME_TYPES
+    kind = filetype.guess(header)
+    return kind is not None and kind.mime in ALLOWED_MIME_TYPES
 
 
 def validate_password_strength(password):
