@@ -52,10 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SocketIO Client Setup ---
   const io = window.io;
   const socket = io(window.location.origin, {
-  	transports: ["websocket"],
-  	secure: window.location.protocol === 'https:',
-  	withCredentials: true,
- 	 reconnectionAttempts: 5
+    transports: ["websocket"],
+    secure: window.location.protocol === 'https:',
+    withCredentials: true,
+    reconnectionAttempts: 5
   });
 
   // Вспомогательная функция для fetch с CSRF
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   socket.on("connect", () => {
-    socket.emit("join_user_room", {user_id: CURRENT_USER_ID});
+    socket.emit("join_user_room", { user_id: CURRENT_USER_ID });
   });
 
   socket.on("connect_error", (err) => {
@@ -202,8 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (window.location.pathname === `/chat/${chatId}`) {
       alert(
-        `Чат был удален пользователем ${
-          deletedByUserId === currentUserId ? "вами" : "собеседником"
+        `Чат был удален пользователем ${deletedByUserId === currentUserId ? "вами" : "собеседником"
         }.`
       );
       window.location.href = "/home";
@@ -220,8 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       alert(
-        `Чат был удален пользователем ${
-          deletedByUserId === currentUserId ? "вами" : "собеседником"
+        `Чат был удален пользователем ${deletedByUserId === currentUserId ? "вами" : "собеседником"
         }.`
       );
     }
@@ -492,21 +490,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Отпечаток ключа (Key Fingerprint) ---
   const FINGERPRINT_EMOJIS = [
-    '🐻','🐯','🦁','🐺','🦊','🐵','🐘','🦒','🦓','🦍','🐨','🐼','🦥','🦔','🐢','🐍',
-    '🐲','🐉','🦕','🦖','🐳','🐬','🧭','🐟','🐠','🐡','🦈','🐙','🦑','🪸','🐌','🦋',
-    '🐛','🐜','🐝','🪲','🐞','🦗','🦫','🪳','🕷️','🪰','🪱','💐','🌸','🌷','🌻','🌺',
-    '🌹','🌼','🌾','🌲','🌳','🌴','🌵','🌿','☘️','🍁','🍂','🍃','🍄','🪶','🪴','🪵',
-    '🍇','🍈','🍉','🍊','🍋','🍌','🍍','🍎','🍏','🍐','🍑','🍒','🍓','🫐','🍅','🥥',
-    '🌶️','🥒','🥕','🌽','🥝','🥜','🥐','🍞','🥖','🧀','🍖','🍗','🥩','🍔','🍕','🌭',
-    '🥪','🌮','🌯','🫔','🍳','🥘','🍲','🫕','🥣','🥗','🧭','🍿','🧈','🧂','🧁','🎂',
-    '🍰','🧇','🍩','🍪','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍺','🍻','🥂','🍷',
-    '🚀','✈️','🛩️','🚁','🚂','🚃','🚄','🚅','🚈','🚌','🚎','🚐','🚑','🚒','🚓','🚕',
-    '🚗','🚙','🚲','🛵','🚢','⛵','🚤','🛶','🛥️','🗼','🏰','🏔️','🏕️','🏝️','🏠','🏢',
-    '⚽','🏀','🏈','⚾','🎾','🏐','🎱','🎳','🎯','⛳','🎿','⛸️','🤺','🏇','🏄','🏊',
-    '🎨','🎬','🎵','🎸','🎹','🎺','🎻','🥁','🎭','🎮','🎲','🧩','🔑','🔐','🔒','🔓',
-    '💡','🔆','🔮','🧪','🧲','🧳','🧻','🧹','🧺','🧴','🧵','🧶','🧷','🧸','🧷','💎',
-    '🌍','🌎','🌏','🌋','🌙','🌚','🌛','🌜','🌝','🌞','⭐','🌟','🌠','⚡','🌈','☄️',
-    '❤️','🧡','💛','💚','💙','💜','🤎','🖤','🤍','♥️','💕','💝','💖','💗','💓','💞'
+    '🐻', '🐯', '🦁', '🐺', '🦊', '🐵', '🐘', '🦒', '🦓', '🦍', '🐨', '🐼', '🦥', '🦔', '🐢', '🐍',
+    '🐲', '🐉', '🦕', '🦖', '🐳', '🐬', '🧭', '🐟', '🐠', '🐡', '🦈', '🐙', '🦑', '🪸', '🐌', '🦋',
+    '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🦫', '🪳', '🕷️', '🪰', '🪱', '💐', '🌸', '🌷', '🌻', '🌺',
+    '🌹', '🌼', '🌾', '🌲', '🌳', '🌴', '🌵', '🌿', '☘️', '🍁', '🍂', '🍃', '🍄', '🪶', '🪴', '🪵',
+    '🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🫐', '🍅', '🥥',
+    '🌶️', '🥒', '🥕', '🌽', '🥝', '🥜', '🥐', '🍞', '🥖', '🧀', '🍖', '🍗', '🥩', '🍔', '🍕', '🌭',
+    '🥪', '🌮', '🌯', '🫔', '🍳', '🥘', '🍲', '🫕', '🥣', '🥗', '🧭', '🍿', '🧈', '🧂', '🧁', '🎂',
+    '🍰', '🧇', '🍩', '🍪', '🍫', '🍬', '🍭', '🍮', '🍯', '☕', '🍵', '🍶', '🍺', '🍻', '🥂', '🍷',
+    '🚀', '✈️', '🛩️', '🚁', '🚂', '🚃', '🚄', '🚅', '🚈', '🚌', '🚎', '🚐', '🚑', '🚒', '🚓', '🚕',
+    '🚗', '🚙', '🚲', '🛵', '🚢', '⛵', '🚤', '🛶', '🛥️', '🗼', '🏰', '🏔️', '🏕️', '🏝️', '🏠', '🏢',
+    '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🎱', '🎳', '🎯', '⛳', '🎿', '⛸️', '🤺', '🏇', '🏄', '🏊',
+    '🎨', '🎬', '🎵', '🎸', '🎹', '🎺', '🎻', '🥁', '🎭', '🎮', '🎲', '🧩', '🔑', '🔐', '🔒', '🔓',
+    '💡', '🔆', '🔮', '🧪', '🧲', '🧳', '🧻', '🧹', '🧺', '🧴', '🧵', '🧶', '🧷', '🧸', '🧷', '💎',
+    '🌍', '🌎', '🌏', '🌋', '🌙', '🌚', '🌛', '🌜', '🌝', '🌞', '⭐', '🌟', '🌠', '⚡', '🌈', '☄️',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '♥️', '💕', '💝', '💖', '💗', '💓', '💞'
   ];
 
   async function generateKeyFingerprint(password) {
@@ -591,7 +589,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (colonIndex === -1) return { text: padded, timestamp: null };
     const realLength = parseInt(padded.substring(0, colonIndex), 10);
     if (isNaN(realLength)) return { text: padded, timestamp: null };
-    const payload = padded.substring(colonIndex + 1, colonIndex + 1 + realLength);
+
+    // Поскольку lengthPrefix (realLength) — это длина в байтах UTF-8,
+    // а Javascript substring работает с символами UTF-16, нужно извлекать по байтам
+    const textPart = padded.substring(colonIndex + 1);
+    const bytes = new TextEncoder().encode(textPart);
+    const payloadBytes = bytes.slice(0, realLength);
+    const payload = new TextDecoder().decode(payloadBytes);
+
     // payload = "timestamp|text"
     const pipeIndex = payload.indexOf('|');
     if (pipeIndex === -1) return { text: payload, timestamp: null };
@@ -707,11 +712,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Для аудио тоже
         const audioPlayer = contentDiv.querySelector('.audio-player');
         if (audioPlayer) {
-        const timeText = document.createElement('span');
-        timeText.className = 'audio-player__time';
-        timeText.textContent = '[Удалено]';
-        audioPlayer.innerHTML = '';
-        audioPlayer.appendChild(timeText);
+          const timeText = document.createElement('span');
+          timeText.className = 'audio-player__time';
+          timeText.textContent = '[Удалено]';
+          audioPlayer.innerHTML = '';
+          audioPlayer.appendChild(timeText);
         }
       }
       messageBubble.classList.add('message-bubble--expired');
@@ -1071,9 +1076,9 @@ document.addEventListener("DOMContentLoaded", () => {
             decryptedSpan.classList.add("decrypted-text");
             if (currentEncryptionKey) {
               const rawDecrypted = await decryptMessage(
-                  msg.content,
-                  currentEncryptionKey,
-                  msg.message_type
+                msg.content,
+                currentEncryptionKey,
+                msg.message_type
               );
               const unpacked = unpadMessage(rawDecrypted);
               decryptedSpan.textContent = unpacked.text;
@@ -1145,14 +1150,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatMenuToggle = document.querySelector('.chat-menu__toggle');
     const chatMenuDropdown = document.querySelector('.chat-menu__dropdown');
     if (chatMenuToggle && chatMenuDropdown) {
-      chatMenuToggle.addEventListener('click', function(e) {
+      chatMenuToggle.addEventListener('click', function (e) {
         e.stopPropagation();
         chatMenuDropdown.style.display = chatMenuDropdown.style.display === 'block' ? 'none' : 'block';
       });
-      document.addEventListener('click', function() {
+      document.addEventListener('click', function () {
         chatMenuDropdown.style.display = 'none';
       });
-      chatMenuDropdown.addEventListener('click', function(e) {
+      chatMenuDropdown.addEventListener('click', function (e) {
         e.stopPropagation();
       });
     }
@@ -1161,7 +1166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleEphemeralBtn = document.getElementById('toggle-ephemeral');
     const ephemeralStatusSpan = document.getElementById('ephemeral-status');
     if (toggleEphemeralBtn) {
-      toggleEphemeralBtn.addEventListener('click', function() {
+      toggleEphemeralBtn.addEventListener('click', function () {
         ephemeralMode = !ephemeralMode;
         if (ephemeralStatusSpan) {
           ephemeralStatusSpan.textContent = ephemeralMode ? 'Вкл' : 'Выкл';
@@ -1266,9 +1271,9 @@ document.addEventListener("DOMContentLoaded", () => {
           decryptedSpan.classList.add("decrypted-text");
           if (currentEncryptionKey) {
             const rawDecrypted = await decryptMessage(
-                msg.content,
-                currentEncryptionKey,
-                msg.message_type
+              msg.content,
+              currentEncryptionKey,
+              msg.message_type
             );
             const unpacked = unpadMessage(rawDecrypted);
             decryptedSpan.textContent = unpacked.text;

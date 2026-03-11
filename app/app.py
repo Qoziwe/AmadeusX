@@ -96,7 +96,7 @@ csp = {
     'font-src': ["'self'", "https://fonts.gstatic.com"],
     'img-src': ["'self'", "data:", "blob:"],
     'media-src': ["'self'", "blob:"],
-    'connect-src': ["'self'", CORS_ORIGIN, f"{_ws_protocol}://{_cors_host}"],
+    'connect-src': ["'self'", CORS_ORIGIN, f"{_ws_protocol}://{_cors_host}", "https://cdnjs.cloudflare.com"],
 }
 
 _force_https = os.environ.get('FORCE_HTTPS', 'True').lower() == 'true'
