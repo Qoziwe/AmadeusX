@@ -513,7 +513,7 @@ body {
   border: 2px solid #00ff88;
 }
 .home__user-avatar--placeholder {
-  background: linear-gradient(45deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -646,7 +646,7 @@ body {
   font-size: 18px;
   color: #000;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
 }
 .user-card__avatar img,
 .invitation-card__avatar img,
@@ -1002,7 +1002,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #000;
   font-size: 3rem;
   font-weight: bold;
 }
@@ -1240,7 +1240,7 @@ body {
   font-size: 18px;
   color: #000;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
 }
 .chat-page__other-user-avatar--placeholder::before {
   content: attr(data-initials);
@@ -1333,7 +1333,7 @@ body {
   font-size: 16px;
   color: #000;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
 }
 .message-bubble__avatar {
   width: 100%;
