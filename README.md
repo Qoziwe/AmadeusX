@@ -1,5 +1,7 @@
 # 🔒 AmadeusX
 
+> 🌐 **Live Demo:** [https://amadeus.andatra.space](https://amadeus.andatra.space)
+
 **AmadeusX** is a web messenger with client-side End-to-End Encryption (E2EE), built on Flask, Socket.IO, and the Web Crypto API. The server never sees the content of the messages — it only stores encrypted text, and the encryption keys exist exclusively in the RAM of the user's browser.
 
 ---
@@ -21,6 +23,7 @@
 ## ✨ Key Features
 
 ### Messenger
+
 - **Text Messages** — sent, received, encrypted/decrypted entirely in the browser.
 - **Voice Messages** — microphone recording, audio encryption (WebM Opus).
 - **Typing Indicator** — shows when the other person is typing.
@@ -30,6 +33,7 @@
 - **Chat Deletion** — completely wipe a chat and its entire history.
 
 ### Security
+
 - **End-to-End Encryption (E2EE)** — AES-256-GCM via Web Crypto API.
 - **Zero-Knowledge Server** — the server stores only encrypted blobs.
 - **Message Padding** — all text messages are padded to 4 KB to hide the actual length.
@@ -85,59 +89,64 @@
 │                                                         │
 │  Key: "Amadeus"   ──►  decrypt()  ──►  "Hello"          │
 │  [🐻🎸🌍💎🚀🌈⭐🔑]  ◄──  Same fingerprint? ✅          │
-└─────────────────────────────────────────────────────────┘
+└────────────────────────┴────────────────────────────────┘
 ```
 
 ### Defense Layers
 
-| Threat | Defense Mechanism |
-|--------|-------------------|
-| Traffic Interception (Wi-Fi, ISP) | HTTPS/WSS + E2EE (AES-256-GCM) |
-| Database Hack/Seizure | Zero-Knowledge — only encrypted blobs |
-| Message Length Analysis | Padding to 4 KB |
-| Send-Time Analysis | Coarse timestamps (±5 mins) |
-| Server-Side JS Spoofing | SRI + Service Worker hash validation |
-| MITM Attack on Key | Visual fingerprints (8 emojis) |
-| Physical Device Access | Auto-lock after 3 mins + disappearing messages |
-| CSRF Attacks | CSRFProtect + tokens |
-| Brute-Force | Rate Limiting (Flask-Limiter) |
-| XSS Injections | CSP with nonce + unsafe-inline disabled |
-| Malicious File Uploads | MIME validation + file size limit (2 MB) |
+| Threat                            | Defense Mechanism                              |
+| --------------------------------- | ---------------------------------------------- |
+| Traffic Interception (Wi-Fi, ISP) | HTTPS/WSS + E2EE (AES-256-GCM)                 |
+| Database Hack/Seizure             | Zero-Knowledge — only encrypted blobs          |
+| Message Length Analysis           | Padding to 4 KB                                |
+| Send-Time Analysis                | Coarse timestamps (±5 mins)                    |
+| Server-Side JS Spoofing           | SRI + Service Worker hash validation           |
+| MITM Attack on Key                | Visual fingerprints (8 emojis)                 |
+| Physical Device Access            | Auto-lock after 3 mins + disappearing messages |
+| CSRF Attacks                      | CSRFProtect + tokens                           |
+| Brute-Force                       | Rate Limiting (Flask-Limiter)                  |
+| XSS Injections                    | CSP with nonce + unsafe-inline disabled        |
+| Malicious File Uploads            | MIME validation + file size limit (2 MB)       |
 
 ---
 
 ## 🔧 Tech Stack
 
 ### Backend
-| Technology | Purpose |
-|------------|---------|
-| Python 3.10+ | Server language |
-| Flask 3.0 | Web framework |
-| Flask-SocketIO 5.3 | WebSockets for real-time |
-| Flask-Login 0.6 | Authentication and session management |
-| Flask-SQLAlchemy 3.1 | ORM for PostgreSQL |
-| Flask-WTF 1.2 | CSRF protection |
-| Flask-Limiter 3.5 | Rate Limiting |
-| Flask-Talisman 1.1 | Security headers (CSP, HSTS) |
-| psycopg2 | PostgreSQL driver |
-| filetype | MIME validation for uploads |
-| python-dotenv | Environment variables loader |
+
+| Technology           | Purpose                               |
+| -------------------- | ------------------------------------- |
+| Python 3.10+         | Server language                       |
+| Flask 3.0            | Web framework                         |
+| Flask-SocketIO 5.3   | WebSockets for real-time              |
+| Flask-Login 0.6      | Authentication and session management |
+| Flask-SQLAlchemy 3.1 | ORM for PostgreSQL / SQLite           |
+| Flask-WTF 1.2        | CSRF protection                       |
+| Flask-Limiter 3.5    | Rate Limiting                         |
+| Flask-Talisman 1.1   | Security headers (CSP, HSTS)          |
+| psycopg2             | PostgreSQL driver                     |
+| filetype             | MIME validation for uploads           |
+| python-dotenv        | Environment variables loader          |
 
 ### Frontend
-| Technology | Purpose |
-|------------|---------|
-| Vanilla JavaScript | All client-side logic |
-| Web Crypto API | AES-256-GCM encryption, PBKDF2, SHA-256 |
-| Socket.IO Client 4.7 | WebSocket connection |
-| Service Worker API | Caching and script integrity checks |
-| MediaRecorder API | Voice message recording |
-| CSS3 | Styling (glassmorphism, gradients, animations) |
-| Google Fonts (Inter) | Typography |
+
+| Technology           | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| Vanilla JavaScript   | All client-side logic                          |
+| Web Crypto API       | AES-256-GCM encryption, PBKDF2, SHA-256        |
+| Socket.IO Client 4.7 | WebSocket connection                           |
+| Service Worker API   | Caching and script integrity checks            |
+| MediaRecorder API    | Voice message recording                        |
+| CSS3                 | Styling (glassmorphism, gradients, animations) |
+| Google Fonts (Inter) | Typography                                     |
 
 ### Infrastructure
-| Technology | Purpose |
-|------------|---------|
-| PostgreSQL | Primary database |
+
+| Technology          | Purpose                                                                 |
+| ------------------- | ----------------------------------------------------------------------- |
+| PostgreSQL / SQLite | Primary database (PostgreSQL for standard production, SQLite supported) |
+| Gunicorn            | WSGI application server                                                 |
+| Cloudflare Tunnel   | Edge routing, DDoS protection, SSL/TLS, zero open ports                 |
 
 ---
 
@@ -154,8 +163,8 @@ AmadeusX/
     ├── requirements.txt        # Python dependencies
     ├── fix_database.py         # Database migration script
     │
-    ├── templates/
-    │   ├── base.html           # Base template (key modal, SRI, Service Worker)
+    ├── templates/              # Base template (key modal, SRI, Service Worker)
+    │   ├── base.html           # Base template
     │   ├── index.html          # Landing / welcome page
     │   ├── auth.html           # Registration and login
     │   ├── home.html           # Dashboard (search, invites, chat list)
@@ -179,40 +188,44 @@ AmadeusX/
 ## 📊 Data Models
 
 ### User
-| Field | Type | Description |
-|-------|------|-------------|
-| id | Integer (PK) | Unique identifier |
-| username | String(80) | Unique username |
-| email | String(120) | Email (unique) |
-| password_hash | String(255) | Password hash (PBKDF2 + SHA-256) |
-| avatar_url | String(255) | Path to avatar (nullable) |
+
+| Field         | Type         | Description                      |
+| ------------- | ------------ | -------------------------------- |
+| id            | Integer (PK) | Unique identifier                |
+| username      | String(80)   | Unique username                  |
+| email         | String(120)  | Email (unique)                   |
+| password_hash | String(255)  | Password hash (PBKDF2 + SHA-256) |
+| avatar_url    | String(255)  | Path to avatar (nullable)        |
 
 ### Invitation
-| Field | Type | Description |
-|-------|------|-------------|
-| id | Integer (PK) | Unique identifier |
-| sender_id | FK → User | Who sent the invite |
-| receiver_id | FK → User | Who received it |
-| status | String(20) | `pending` / `accepted` / `rejected` |
-| timestamp | DateTime | Creation time |
+
+| Field       | Type         | Description                         |
+| ----------- | ------------ | ----------------------------------- |
+| id          | Integer (PK) | Unique identifier                   |
+| sender_id   | FK → User    | Who sent the invite                 |
+| receiver_id | FK → User    | Who received it                     |
+| status      | String(20)   | `pending` / `accepted` / `rejected` |
+| timestamp   | DateTime     | Creation time                       |
 
 ### Chat
-| Field | Type | Description |
-|-------|------|-------------|
-| id | Integer (PK) | Unique identifier |
-| user1_id | FK → User | First participant |
-| user2_id | FK → User | Second participant |
-| is_active | Boolean | Is the chat currently active |
+
+| Field     | Type         | Description                  |
+| --------- | ------------ | ---------------------------- |
+| id        | Integer (PK) | Unique identifier            |
+| user1_id  | FK → User    | First participant            |
+| user2_id  | FK → User    | Second participant           |
+| is_active | Boolean      | Is the chat currently active |
 
 ### Message
-| Field | Type | Description |
-|-------|------|-------------|
-| id | Integer (PK) | Unique identifier |
-| chat_id | FK → Chat | Chat reference |
-| sender_id | FK → User | Sender |
-| content | Text | **Encrypted** content (base64) |
-| message_type | String(10) | `text` or `audio` |
-| timestamp | DateTime | Coarse time (±5 mins) |
+
+| Field        | Type         | Description                    |
+| ------------ | ------------ | ------------------------------ |
+| id           | Integer (PK) | Unique identifier              |
+| chat_id      | FK → Chat    | Chat reference                 |
+| sender_id    | FK → User    | Sender                         |
+| content      | Text         | **Encrypted** content (base64) |
+| message_type | String(10)   | `text` or `audio`              |
+| timestamp    | DateTime     | Coarse time (±5 mins)          |
 
 > ⚠️ **Important:** The `content` field contains a string in the format `salt:iv:ciphertext` (base64). It can only be decrypted using the secret key entered by the users. The exact sending time is encrypted inside the `content`.
 
@@ -221,48 +234,52 @@ AmadeusX/
 ## 🌐 API Routes
 
 ### Pages
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | `/` | Landing page |
-| GET/POST | `/auth` | Login / Registration |
-| GET | `/home` | Dashboard (chats, invites, search) |
-| GET | `/chat/<id>` | Chat page |
-| GET | `/profile` | User profile |
-| GET | `/logout` | Logout |
-| GET | `/sw.js` | Service Worker |
+
+| Method   | URL          | Description                        |
+| -------- | ------------ | ---------------------------------- |
+| GET      | `/`          | Landing page                       |
+| GET/POST | `/auth`      | Login / Registration               |
+| GET      | `/home`      | Dashboard (chats, invites, search) |
+| GET      | `/chat/<id>` | Chat page                          |
+| GET      | `/profile`   | User profile                       |
+| GET      | `/logout`    | Logout                             |
+| GET      | `/sw.js`     | Service Worker                     |
 
 ### API (JSON)
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | `/search_users?q=` | Search for users |
-| POST | `/send_invitation` | Send an invite |
-| POST | `/accept_invitation/<id>` | Accept an invite |
-| POST | `/reject_invitation/<id>` | Reject an invite |
-| POST | `/send_message` | Send an encrypted message |
-| POST | `/delete_message/<id>` | Delete a message (ephemeral) |
-| GET | `/get_messages/<chat_id>` | Fetch new messages |
-| POST | `/delete_chat/<id>` | Delete a chat |
-| POST | `/update_avatar` | Upload an avatar |
-| POST | `/change_password` | Change password |
-| POST | `/delete_account` | Delete account |
+
+| Method | URL                       | Description                  |
+| ------ | ------------------------- | ---------------------------- |
+| GET    | `/search_users?q=`        | Search for users             |
+| POST   | `/send_invitation`        | Send an invite               |
+| POST   | `/accept_invitation/<id>` | Accept an invite             |
+| POST   | `/reject_invitation/<id>` | Reject an invite             |
+| POST   | `/send_message`           | Send an encrypted message    |
+| POST   | `/delete_message/<id>`    | Delete a message (ephemeral) |
+| GET    | `/get_messages/<chat_id>` | Fetch new messages           |
+| POST   | `/delete_chat/<id>`       | Delete a chat                |
+| POST   | `/update_avatar`          | Upload an avatar             |
+| POST   | `/change_password`        | Change password              |
+| POST   | `/delete_account`         | Delete account               |
 
 ### Socket.IO Events
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `join_user_room` | Client → Server | Join personal room |
-| `join_chat_room` | Client → Server | Join chat room |
-| `leave_chat_room` | Client → Server | Leave chat room |
-| `new_message` | Server → Client | New message broadcast |
-| `typing` | Bidirectional | Peer started typing |
-| `stop_typing` | Bidirectional | Peer stopped typing |
+
+| Event             | Direction       | Description           |
+| ----------------- | --------------- | --------------------- |
+| `join_user_room`  | Client → Server | Join personal room    |
+| `join_chat_room`  | Client → Server | Join chat room        |
+| `leave_chat_room` | Client → Server | Leave chat room       |
+| `new_message`     | Server → Client | New message broadcast |
+| `typing`          | Bidirectional   | Peer started typing   |
+| `stop_typing`     | Bidirectional   | Peer stopped typing   |
 
 ---
 
 ## 🚀 Installation & Setup
 
 ### Prerequisites
+
 - Python 3.10+
-- PostgreSQL 14+
+- PostgreSQL 14+ (or SQLite)
 - pip
 
 ### 1. Clone & Install Dependencies
@@ -289,18 +306,19 @@ Create a `.env` file in the `app/` folder:
 SECRET_KEY=your_secret_key_here
 FLASK_DEBUG=False
 
-# PostgreSQL
+# PostgreSQL (or sqlite:///database.db)
 DATABASE_URI=postgresql://user:password@localhost:5432/dbname
 
-# CORS (for local development)
-CORS_ORIGIN=http://127.0.0.1:8000
+# CORS
+CORS_ORIGIN=https://amadeus.andatra.space
 
 # Security (Set to True for production)
-COOKIE_SECURE=False
-FORCE_HTTPS=False
+COOKIE_SECURE=True
+FORCE_HTTPS=True
 ```
 
 Generate a `SECRET_KEY`:
+
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
@@ -321,31 +339,32 @@ cd app
 python app.py
 ```
 
-The application will be available at: **http://127.0.0.1:8000**
+The application will be available locally at: **http://127.0.0.1:8000**
 
-### For Production
-1. Change `CORS_ORIGIN` in `.env` to your domain (e.g., `https://example.com`).
+### For Production Deployment
+
+1. Change `CORS_ORIGIN` in `.env` to your production domain (`https://amadeus.andatra.space`).
 2. Set `SESSION_COOKIE_SECURE = True` in `app.py`.
-3. Set `session_cookie_secure=True` in Talisman.
-4. Set `force_https=True` in Talisman.
-5. Change `connect-src` to `wss://` in the CSP.
-6. Change `secure: false` to `secure: true` in the Socket.IO client (`scripts.js`).
-7. Use Nginx/Apache as a reverse proxy with SSL (Let's Encrypt).
+3. Set `session_cookie_secure=True` and `force_https=True` in Talisman.
+4. **Cloudflare Tunnel Setup (Recommended):**
+   Run the backend locally via **Gunicorn** (`gunicorn -w 1 --threads 100 app:app`) and route traffic securely through **Cloudflare Tunnel** (`cloudflared`). This provides free SSL, DDoS protection, edge caching, and Zero-Trust architecture without exposing public inbound ports or requiring a static IP address.
+5. Alternatively, deploy behind Nginx/Apache as a standard reverse proxy with SSL (Let's Encrypt).
 
 ---
 
 ## ⚙ Configuration
 
 ### Key Parameters (in code)
-| Parameter | File | Value | Description |
-|-----------|------|-------|-------------|
-| `EPHEMERAL_TIMEOUT` | scripts.js | 30000 ms | Lifespan of an ephemeral message |
-| `INACTIVITY_TIMEOUT` | scripts.js | 180000 ms | Idle timeout (3 mins) |
-| `PAD_SIZE` | scripts.js | 4096 bytes | Message padding size |
-| `PBKDF2 iterations` | scripts.js | 600000 | Key derivation iterations |
-| `coarse_timestamp` | app.py | 5 mins | Timestamp rounding interval |
-| `MAX_CONTENT_LENGTH` | app.py | 2 MB | Max file upload size |
-| `Rate Limits` | app.py | 200/day, 50/hr | Global request limits |
+
+| Parameter            | File       | Value          | Description                      |
+| -------------------- | ---------- | -------------- | -------------------------------- |
+| `EPHEMERAL_TIMEOUT`  | scripts.js | 30000 ms       | Lifespan of an ephemeral message |
+| `INACTIVITY_TIMEOUT` | scripts.js | 180000 ms      | Idle timeout (3 mins)            |
+| `PAD_SIZE`           | scripts.js | 4096 bytes     | Message padding size             |
+| `PBKDF2 iterations`  | scripts.js | 600000         | Key derivation iterations        |
+| `coarse_timestamp`   | app.py     | 5 mins         | Timestamp rounding interval      |
+| `MAX_CONTENT_LENGTH` | app.py     | 2 MB           | Max file upload size             |
+| `Rate Limits`        | app.py     | 200/day, 50/hr | Global request limits            |
 
 ---
 
@@ -356,6 +375,7 @@ The application will be available at: **http://127.0.0.1:8000**
 ### The Problem
 
 In an E2EE model, previously sent messages are cryptographically protected. However, if an attacker (or intelligence agencies) seizes control of the server, they could:
+
 1. **Spoof JavaScript code** — inject a "backdoor" that intercepts the user's encryption key on their next visit and sends it to the attacker.
 2. **Collect Metadata** — track who is talking to whom, when, and how often (even without decrypting the content).
 3. **Intercept Future Keys** — new users, or users logging in from new devices, will receive the "poisoned" code.
@@ -367,6 +387,7 @@ The goal: ensure the server **automatically detects an intrusion** and self-dest
 ### Method 1: Dead Man's Switch
 
 #### Principle
+
 The server expects a regular "ping of life" from the administrator. If the ping is not received on time (the admin is arrested, lost access, or the server is isolated), a self-destruct protocol is initiated.
 
 #### Implementation
@@ -450,6 +471,7 @@ if __name__ == "__main__":
 ```
 
 #### False Positive Prevention
+
 - Set a buffer (1–2 hours) beyond the primary period.
 - Use multiple ping channels (HTTP, SMS API, Telegram Bot).
 - Send a warning notification to the administrator before destruction (optional).
@@ -459,6 +481,7 @@ if __name__ == "__main__":
 ### Method 2: Honeytokens (Trap Files)
 
 #### Principle
+
 "Bait" files are placed on the server with enticing names that are never read during normal operation. If an attacker accesses such a file (during manual reconnaissance or automated scraping), an alarm is triggered.
 
 #### Implementation
@@ -519,6 +542,7 @@ auditctl -w /app/database_dump.sql -p r -k honeytoken
 ### Method 3: File Integrity Monitoring (FIM)
 
 #### Principle
+
 A background process regularly calculates the hashes of all critical project files. If even one file is modified (attacker tampered with the code) and the admin did not perform an update — the server locks down.
 
 #### Implementation
@@ -583,6 +607,7 @@ def main_loop():
 ```
 
 #### Important Nuances
+
 - Baseline hashes must be stored on a read-only partition or a separate server.
 - The monitoring script itself must be protected against spoofing.
 - During a legitimate code update, the baseline must be updated (via a secure authenticated procedure).
@@ -592,7 +617,9 @@ def main_loop():
 ### Method 4: Duress Password
 
 #### Principle
+
 The administrator has two passwords to log into the control panel:
+
 - **Real Password** — standard login.
 - **Duress Password** — seemingly functions normally, but silently triggers a self-destruct in the background.
 
@@ -651,6 +678,7 @@ def silent_wipe():
 ### Method 5: Warrant Canary
 
 #### Principle
+
 This is a legal mechanism rather than an automatic one. The administrator regularly publishes a public, cryptographically signed statement:
 
 > "As of March 8, 2026, we have not received any requests from government agencies to disclose user data. Our server has not been compromised."
@@ -677,16 +705,19 @@ If the statement disappears or stops being updated, users understand that someth
 ```
 
 #### Why it works
-In many jurisdictions, intelligence agencies can issue a "gag order" forbidding the admin from *speaking* about a request. However, they cannot compel the admin to *continue publishing a false statement*. The absence of a new statement serves as a passive signal that does not violate the gag order.
+
+In many jurisdictions, intelligence agencies can issue a "gag order" forbidding the admin from _speaking_ about a request. However, they cannot compel the admin to _continue publishing a false statement_. The absence of a new statement serves as a passive signal that does not violate the gag order.
 
 ---
 
 ### Method 6: Disk Encryption with RAM Key (LUKS + tmpfs)
 
 #### Principle
+
 The entire server disk is encrypted (LUKS). The decryption key is stored exclusively in Random Access Memory (RAM). If the power is cut or the server reboots, the key vanishes, rendering the disk unreadable.
 
 #### Scenario
+
 1. Intelligence agencies arrive at the data center.
 2. They pull the server's power plug (standard seizure procedure).
 3. The RAM loses data in ~2-5 seconds.
