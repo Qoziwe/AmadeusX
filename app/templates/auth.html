@@ -15,14 +15,17 @@ content %}
       </div>
 
       <div class="auth__tabs">
-        <button class="auth__tab auth__tab--active" data-tab="login">
+        <button class="auth__tab {% if mode != 'register' %}auth__tab--active{% endif %}" data-tab="login">
           Вход
         </button>
-        <button class="auth__tab" data-tab="register">Регистрация</button>
+        <button class="auth__tab {% if mode == 'register' %}auth__tab--active{% endif %}" data-tab="register">
+          Регистрация
+        </button>
       </div>
 
       <!-- Форма входа -->
-      <div class="auth__form auth__form--active" id="login-form">
+      <div class="auth__form {% if mode != 'register' %}auth__form--active{% endif %}" id="login-form">
+        <div class="auth__messages" id="login-messages"></div>
         <form method="POST" action="{{ url_for('login') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <div class="form-group">
@@ -32,6 +35,7 @@ content %}
               name="email"
               class="form-group__input"
               required
+              autocomplete="email"
             />
           </div>
 
@@ -42,6 +46,7 @@ content %}
               name="password"
               class="form-group__input"
               required
+              autocomplete="current-password"
             />
           </div>
 
@@ -52,7 +57,8 @@ content %}
       </div>
 
       <!-- Форма регистрации -->
-      <div class="auth__form" id="register-form">
+      <div class="auth__form {% if mode == 'register' %}auth__form--active{% endif %}" id="register-form">
+        <div class="auth__messages" id="register-messages"></div>
         <form method="POST" action="{{ url_for('register') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <div class="form-group">
@@ -61,7 +67,10 @@ content %}
               type="text"
               name="username"
               class="form-group__input"
+              value="{{ reg_username|default('', true) }}"
               required
+              autocomplete="username"
+              maxlength="80"
             />
           </div>
 
@@ -71,7 +80,9 @@ content %}
               type="email"
               name="email"
               class="form-group__input"
+              value="{{ reg_email|default('', true) }}"
               required
+              autocomplete="email"
             />
           </div>
 
@@ -80,8 +91,10 @@ content %}
             <input
               type="password"
               name="password"
+              id="register-password"
               class="form-group__input"
               required
+              autocomplete="new-password"
             />
           </div>
 
@@ -90,9 +103,31 @@ content %}
             <input
               type="password"
               name="confirm_password"
+              id="register-confirm-password"
               class="form-group__input"
               required
+              autocomplete="new-password"
             />
+          </div>
+
+          <!-- Чеклист требований к паролю -->
+          <div class="password-requirements" id="register-password-requirements">
+            <div class="password-requirement" data-req="length">
+              <span class="req-icon">✕</span>
+              <span class="req-text">От 8 до 128 символов</span>
+            </div>
+            <div class="password-requirement" data-req="letter">
+              <span class="req-icon">✕</span>
+              <span class="req-text">Хотя бы одна буква</span>
+            </div>
+            <div class="password-requirement" data-req="digit">
+              <span class="req-icon">✕</span>
+              <span class="req-text">Хотя бы одна цифра</span>
+            </div>
+            <div class="password-requirement" data-req="match">
+              <span class="req-icon">✕</span>
+              <span class="req-text">Пароли совпадают</span>
+            </div>
           </div>
 
           <button type="submit" class="btn btn--primary btn--full">
@@ -102,7 +137,7 @@ content %}
       </div>
 
       {% with messages = get_flashed_messages() %} {% if messages %}
-      <div class="auth__messages">
+      <div class="auth__messages" id="server-messages">
         {% for message in messages %}
         <div class="message message--error">{{ message }}</div>
         {% endfor %}

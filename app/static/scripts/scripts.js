@@ -5,6 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return metaTag ? metaTag.getAttribute('content') : '';
   }
 
+  // Вспомогательная функция для fetch с CSRF
+  function secureFetch(url, options = {}) {
+    const headers = options.headers || {};
+    headers['X-CSRFToken'] = getCSRFToken();
+    return fetch(url, { ...options, headers });
+  }
+
   // --- Общая логика для переключения форм авторизации ---
   const tabs = document.querySelectorAll(".auth__tab");
   const forms = document.querySelectorAll(".auth__form");
@@ -19,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       this.classList.add("auth__tab--active");
       document
         .getElementById(targetForm + "-form")
-        .classList.add("auth__form--active");
+        ?.classList.add("auth__form--active");
     });
   });
 
@@ -31,6 +38,218 @@ document.addEventListener("DOMContentLoaded", () => {
   } else if (mode === "register") {
     document.querySelector('[data-tab="register"]')?.click();
   }
+
+  // --- Логика интерактивной валидации и AJAX-отправки форм авторизации ---
+  function initAuthForms() {
+    const registerForm = document.querySelector("#register-form form");
+    const loginForm = document.querySelector("#login-form form");
+    const passwordInput = document.getElementById("register-password");
+    const confirmInput = document.getElementById("register-confirm-password");
+    const registerMessages = document.getElementById("register-messages");
+    const loginMessages = document.getElementById("login-messages");
+    const serverMessages = document.getElementById("server-messages");
+
+    function getRequirementsStatus(pass, confirmPass) {
+      return {
+        length: pass.length >= 8 && pass.length <= 128,
+        letter: /[a-zA-Zа-яА-ЯёЁ]/.test(pass),
+        digit: /[0-9]/.test(pass),
+        match: pass.length > 0 && confirmPass.length > 0 && pass === confirmPass
+      };
+    }
+
+    function updateRequirementsUI() {
+      if (!passwordInput || !confirmInput) return;
+      const pass = passwordInput.value;
+      const confirmPass = confirmInput.value;
+      const status = getRequirementsStatus(pass, confirmPass);
+
+      const items = document.querySelectorAll("#register-password-requirements .password-requirement");
+      items.forEach((item) => {
+        const req = item.dataset.req;
+        const icon = item.querySelector(".req-icon");
+        if (status[req]) {
+          item.classList.add("password-requirement--valid");
+          item.classList.remove("password-requirement--invalid");
+          if (icon) icon.textContent = "✓";
+        } else {
+          item.classList.remove("password-requirement--valid");
+          if (icon) icon.textContent = "✕";
+        }
+      });
+    }
+
+    if (passwordInput && confirmInput) {
+      passwordInput.addEventListener("input", updateRequirementsUI);
+      confirmInput.addEventListener("input", updateRequirementsUI);
+    }
+
+    // Обработка отправки формы регистрации
+    if (registerForm) {
+      registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (serverMessages) serverMessages.style.display = "none";
+        if (registerMessages) registerMessages.innerHTML = "";
+
+        const usernameInput = registerForm.querySelector('input[name="username"]');
+        const emailInput = registerForm.querySelector('input[name="email"]');
+        const username = usernameInput ? usernameInput.value.trim() : "";
+        const email = emailInput ? emailInput.value.trim() : "";
+        const password = passwordInput ? passwordInput.value : "";
+        const confirm_password = confirmInput ? confirmInput.value : "";
+
+        // Клиентская валидация
+        const errors = [];
+        if (username.length < 2 || username.length > 80) {
+          errors.push("Имя пользователя должно быть от 2 до 80 символов.");
+        } else if (!/^[a-zA-Zа-яА-ЯёЁ0-9_]+$/.test(username)) {
+          errors.push("Имя пользователя может содержать только буквы, цифры и подчёркивания.");
+        }
+
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          errors.push("Неверный формат email.");
+        }
+
+        const passStatus = getRequirementsStatus(password, confirm_password);
+        const passMissing = [];
+        if (!passStatus.length) passMissing.push("не менее 8 символов");
+        if (!passStatus.letter) passMissing.push("хотя бы одну букву");
+        if (!passStatus.digit) passMissing.push("хотя бы одну цифру");
+        if (passMissing.length > 0) {
+          errors.push("В пароле не хватает: " + passMissing.join(", ") + ".");
+        }
+
+        if (password !== confirm_password) {
+          errors.push("Пароли не совпадают.");
+        }
+
+        if (errors.length > 0) {
+          // Подсвечиваем невыполненные требования
+          const items = document.querySelectorAll("#register-password-requirements .password-requirement");
+          items.forEach((item) => {
+            const req = item.dataset.req;
+            if (!passStatus[req]) {
+              item.classList.add("password-requirement--invalid");
+            }
+          });
+
+          if (registerMessages) {
+            registerMessages.innerHTML = errors
+              .map((err) => `<div class="message message--error">${err}</div>`)
+              .join("");
+          }
+          return;
+        }
+
+        // Отправка через AJAX без перезагрузки страницы
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : "";
+        if (submitBtn) {
+          submitBtn.classList.add("btn--loading");
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="btn__text">Регистрация...</span>';
+        }
+
+        try {
+          const res = await secureFetch("/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({
+              username,
+              email,
+              password,
+              confirm_password
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            window.location.href = data.redirect || "/home";
+          } else {
+            if (registerMessages) {
+              registerMessages.innerHTML = `<div class="message message--error">${data.error || "Ошибка регистрации. Попробуйте еще раз."}</div>`;
+            }
+          }
+        } catch (err) {
+          if (registerMessages) {
+            registerMessages.innerHTML = '<div class="message message--error">Сетевая ошибка. Пожалуйста, проверьте подключение.</div>';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.classList.remove("btn--loading");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+          }
+        }
+      });
+    }
+
+    // Обработка отправки формы логина
+    if (loginForm) {
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (serverMessages) serverMessages.style.display = "none";
+        if (loginMessages) loginMessages.innerHTML = "";
+
+        const emailInput = loginForm.querySelector('input[name="email"]');
+        const passInput = loginForm.querySelector('input[name="password"]');
+        const email = emailInput ? emailInput.value.trim() : "";
+        const password = passInput ? passInput.value : "";
+
+        if (!email || !password) {
+          if (loginMessages) {
+            loginMessages.innerHTML = '<div class="message message--error">Заполните email и пароль.</div>';
+          }
+          return;
+        }
+
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : "";
+        if (submitBtn) {
+          submitBtn.classList.add("btn--loading");
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="btn__text">Вход...</span>';
+        }
+
+        try {
+          const res = await secureFetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            window.location.href = data.redirect || "/home";
+          } else {
+            if (loginMessages) {
+              loginMessages.innerHTML = `<div class="message message--error">${data.error || "Неверный email или пароль."}</div>`;
+            }
+          }
+        } catch (err) {
+          if (loginMessages) {
+            loginMessages.innerHTML = '<div class="message message--error">Сетевая ошибка. Пожалуйста, проверьте подключение.</div>';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.classList.remove("btn--loading");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+          }
+        }
+      });
+    }
+  }
+
+  initAuthForms();
 
   // --- Логика для home.html ---
   const userSearchInput = document.getElementById("user-search-input");
@@ -58,15 +277,12 @@ document.addEventListener("DOMContentLoaded", () => {
     reconnectionAttempts: 5
   });
 
-  // Вспомогательная функция для fetch с CSRF
-  function secureFetch(url, options = {}) {
-    const headers = options.headers || {};
-    headers['X-CSRFToken'] = getCSRFToken();
-    return fetch(url, { ...options, headers });
-  }
-
   socket.on("connect", () => {
-    socket.emit("join_user_room", { user_id: CURRENT_USER_ID });
+    const chatConfigEl = document.getElementById("chat-config");
+    const uid = chatConfigEl ? Number(chatConfigEl.dataset.currentUserId) : (window.CURRENT_USER_ID || null);
+    if (uid) {
+      socket.emit("join_user_room", { user_id: uid });
+    }
   });
 
   socket.on("connect_error", (err) => {

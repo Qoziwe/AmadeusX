@@ -6,7 +6,7 @@ import base64
 import logging
 import filetype
 from datetime import datetime, timedelta
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_from_directory
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_from_directory, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash
 from models import db, User, Invitation, Chat, Message
@@ -21,6 +21,10 @@ from collections import defaultdict
 import time
 
 # Загрузка переменных окружения из .env
+basedir = os.path.abspath(os.path.dirname(__file__))
+env_path = os.path.join(basedir, '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
 load_dotenv()
 
 
@@ -179,14 +183,21 @@ def validate_file_content(file_stream):
 
 def validate_password_strength(password):
     """Проверка сложности пароля: ≥8, ≤128 символов, буквы + цифры."""
-    if len(password) < 8:
-        return False, 'Пароль должен быть не менее 8 символов.'
+    if not password:
+        return False, 'Пароль не может быть пустым.'
     if len(password) > 128:
         return False, 'Пароль не может быть длиннее 128 символов.'
+
+    missing = []
+    if len(password) < 8:
+        missing.append('не менее 8 символов')
     if not any(c.isalpha() for c in password):
-        return False, 'Пароль должен содержать хотя бы одну букву.'
+        missing.append('хотя бы одну букву')
     if not any(c.isdigit() for c in password):
-        return False, 'Пароль должен содержать хотя бы одну цифру.'
+        missing.append('хотя бы одну цифру')
+
+    if missing:
+        return False, f"В пароле не хватает: {', '.join(missing)}."
     return True, ''
 
 
@@ -234,64 +245,92 @@ def index():
 def auth():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-    return render_template('auth.html')
+    mode = request.args.get('mode', 'login')
+    reg_username = session.pop('reg_username', '')
+    reg_email = session.pop('reg_email', '')
+    return render_template('auth.html', mode=mode, reg_username=reg_username, reg_email=reg_email)
 
 
 @app.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def login():
-    email = request.form.get('email', '').strip()
-    password = request.form.get('password', '')
+    is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+              'application/json' in request.headers.get('Accept', '')
+
+    if request.is_json:
+        data = request.get_json() or {}
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
+    else:
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
 
     user = User.query.filter_by(email=email).first()
 
     if user and user.check_password(password):
         security_logger.info(f'Successful login: {email} from {get_remote_address()}')
         login_user(user)
+        if is_ajax:
+            return jsonify({'success': True, 'redirect': url_for('home')})
         return redirect(url_for('home'))
     else:
         # Timing-safe: выполняем фиктивный хеш, чтобы время ответа было одинаковым
         if not user:
             generate_password_hash('dummy_password_for_timing_safety')
         security_logger.warning(f'Failed login attempt: {email} from {get_remote_address()}')
+        if is_ajax:
+            return jsonify({'success': False, 'error': 'Неверный email или пароль'}), 400
         flash('Неверный email или пароль')
-        return redirect(url_for('auth'))
+        return redirect(url_for('auth', mode='login'))
 
 
 @app.route('/register', methods=['POST'])
-@limiter.limit("3 per minute")
+@limiter.limit("10 per minute")
 def register():
-    username = request.form.get('username', '').strip()
-    email = request.form.get('email', '').strip()
-    password = request.form.get('password', '')
-    confirm_password = request.form.get('confirm_password', '')
+    is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+              'application/json' in request.headers.get('Accept', '')
+
+    if request.is_json:
+        data = request.get_json() or {}
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+    else:
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+    def fail(error_msg):
+        if is_ajax:
+            return jsonify({'success': False, 'error': error_msg}), 400
+        session['reg_username'] = username
+        session['reg_email'] = email
+        flash(error_msg)
+        return redirect(url_for('auth', mode='register'))
 
     # Валидация имени пользователя
     is_valid, error_msg = validate_username(username)
     if not is_valid:
-        flash(error_msg)
-        return redirect(url_for('auth'))
+        return fail(error_msg)
 
     # Валидация email
     is_valid, error_msg = validate_email(email)
     if not is_valid:
-        flash(error_msg)
-        return redirect(url_for('auth'))
+        return fail(error_msg)
 
     if password != confirm_password:
-        flash('Пароли не совпадают')
-        return redirect(url_for('auth'))
+        return fail('Пароли не совпадают')
 
     # Проверка сложности пароля
     is_valid, error_msg = validate_password_strength(password)
     if not is_valid:
-        flash(error_msg)
-        return redirect(url_for('auth'))
+        return fail(error_msg)
 
     # Общее сообщение об ошибке для предотвращения перечисления пользователей
     if User.query.filter_by(email=email).first() or User.query.filter_by(username=username).first():
-        flash('Регистрация с указанными данными невозможна. Попробуйте другие.')
-        return redirect(url_for('auth'))
+        return fail('Регистрация с указанными данными невозможна. Попробуйте другие.')
 
     user = User(username=username, email=email)
     user.set_password(password)
@@ -301,7 +340,22 @@ def register():
 
     security_logger.info(f'New user registered: {username} from {get_remote_address()}')
     login_user(user)
+
+    if is_ajax:
+        return jsonify({'success': True, 'redirect': url_for('home')})
     return redirect(url_for('home'))
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+              'application/json' in request.headers.get('Accept', '')
+    msg = 'Слишком много попыток. Пожалуйста, подождите минуту.'
+    if is_ajax:
+        return jsonify({'success': False, 'error': msg}), 429
+    flash(msg)
+    mode = 'register' if request.path == '/register' else 'login'
+    return redirect(url_for('auth', mode=mode))
 
 
 @app.route('/logout', methods=['POST'])
