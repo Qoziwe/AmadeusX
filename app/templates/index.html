@@ -59,18 +59,305 @@ block content %}
     </div>
 
     <div class="welcome__visual">
-      <div class="encryption-demo">
-        <div class="encryption-demo__message">
-          <div class="message">Привет! Как дела?</div>
+      <div class="crypto-widget">
+        <!-- Шапка виджета -->
+        <div class="crypto-widget__header">
+          <div class="crypto-widget__dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="crypto-widget__protocol">
+            <span class="status-dot"></span> AES-256-GCM • LIVE
+          </div>
+          <button
+            type="button"
+            class="crypto-widget__key-btn"
+            id="rotateKeyBtn"
+            title="Сгенерировать новый ключ AES-256"
+          >
+            🔑 <span id="keyFingerprint">🛡️⚡🐉🔥</span>
+          </button>
         </div>
-        <div class="encryption-demo__arrow">→</div>
+
+        <!-- Шаг 1: Отправитель (Интерактивный ввод) -->
+        <div class="crypto-widget__box crypto-widget__box--sender">
+          <div class="crypto-widget__label">
+            <span>📤 Отправитель (Попробуй ввести текст!)</span>
+          </div>
+          <div class="crypto-widget__input-wrapper">
+            <input
+              type="text"
+              id="cryptoInput"
+              class="crypto-widget__input"
+              value="Привет! Как дела?"
+              maxlength="45"
+              placeholder="Введите секретное сообщение..."
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <!-- Анимированный туннель шифрования -->
+        <div class="crypto-widget__tunnel">
+          <div class="tunnel-line">
+            <div class="tunnel-particle"></div>
+          </div>
+          <div class="tunnel-core" id="tunnelCore">
+            <span class="tunnel-core__icon">🔒</span>
+            <span class="tunnel-core__text">E2EE ШИФРОВАНИЕ</span>
+          </div>
+          <div class="tunnel-line">
+            <div class="tunnel-particle tunnel-particle--delayed"></div>
+          </div>
+        </div>
+
+        <!-- Переключатель режима просмотра -->
+        <div class="crypto-widget__tabs">
+          <button
+            type="button"
+            class="crypto-tab crypto-tab--active"
+            data-view="hacker"
+          >
+            🕵️ Перехват (Хакер)
+          </button>
+          <button type="button" class="crypto-tab" data-view="receiver">
+            🔓 Получатель
+          </button>
+        </div>
+
+        <!-- Шаг 2: Результат (Шифр или Расшифровка) -->
         <div
-          class="encryption-demo__message encryption-demo__message--encrypted"
+          class="crypto-widget__box crypto-widget__box--output"
+          id="outputBox"
         >
-          <div class="message message--encrypted">aGk3mP9xQ2vL8nR5...</div>
+          <div class="crypto-widget__label">
+            <span id="outputLabel"
+              >🛡️ Перехваченный пакет (AES-GCM Ciphertext)</span
+            >
+            <span class="crypto-widget__badge" id="outputBadge">ENCRYPTED</span>
+          </div>
+          <div class="crypto-widget__cipher" id="cryptoOutput">
+            Инициализация WebCrypto...
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script nonce="{{ csp_nonce() }}">
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("cryptoInput");
+    const output = document.getElementById("cryptoOutput");
+    const outputBox = document.getElementById("outputBox");
+    const outputLabel = document.getElementById("outputLabel");
+    const outputBadge = document.getElementById("outputBadge");
+    const rotateKeyBtn = document.getElementById("rotateKeyBtn");
+    const keyFingerprint = document.getElementById("keyFingerprint");
+    const tunnelCore = document.getElementById("tunnelCore");
+    const tabs = document.querySelectorAll(".crypto-tab");
+
+    if (!input || !output) return;
+
+    const scrambleChars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    const emojiPool = [
+      "🛡️",
+      "⚡",
+      "🐉",
+      "🔥",
+      "💎",
+      "🚀",
+      "👁️",
+      "🦊",
+      "🌌",
+      "🧬",
+      "🗡️",
+      "🔮",
+      "🔒",
+      "🛰️",
+      "👾",
+      "🍀",
+    ];
+    const demoPhrases = [
+      "Привет! Как дела?",
+      "Код запуска: 4815162342",
+      "Встречаемся в полночь 🕶️",
+      "Никто не прочитает этот чат",
+    ];
+
+    let currentView = "hacker";
+    let cryptoKey = null;
+    let lastCipherBuffer = null;
+    let lastIv = null;
+    let isUserInteracting = false;
+    let scrambleInterval = null;
+    let demoTimeout = null;
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    function bufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    // Генерация настоящего 256-битного ключа AES-GCM и SHA-256 отпечатка
+    async function generateRealKey() {
+      cryptoKey = await window.crypto.subtle.generateKey(
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"],
+      );
+
+      const rawKey = await window.crypto.subtle.exportKey("raw", cryptoKey);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", rawKey);
+      const hashArray = new Uint8Array(hashBuffer);
+
+      let fingerprint = "";
+      for (let i = 0; i < 4; i++) {
+        fingerprint += emojiPool[hashArray[i] % emojiPool.length];
+      }
+      keyFingerprint.textContent = fingerprint;
+    }
+
+    // Анимация матричного перебора при обновлении текста
+    function animateTextTransition(targetText) {
+      clearInterval(scrambleInterval);
+      let iterations = 0;
+      const maxIterations = 8;
+
+      tunnelCore.classList.add("tunnel-core--active");
+      setTimeout(() => tunnelCore.classList.remove("tunnel-core--active"), 250);
+
+      scrambleInterval = setInterval(() => {
+        output.textContent = targetText
+          .split("")
+          .map((char, index) => {
+            if (char === " ") return " ";
+            if (index < (iterations / maxIterations) * targetText.length) {
+              return targetText[index];
+            }
+            return scrambleChars[
+              Math.floor(Math.random() * scrambleChars.length)
+            ];
+          })
+          .join("");
+
+        iterations++;
+        if (iterations > maxIterations) {
+          clearInterval(scrambleInterval);
+          output.textContent = targetText;
+        }
+      }, 20);
+    }
+
+    // Реальное шифрование и дешифрование через Web Crypto API
+    async function processCrypto() {
+      if (!cryptoKey) await generateRealKey();
+
+      const plainText = input.value;
+      if (!plainText) {
+        output.textContent = "Ожидание ввода данных...";
+        return;
+      }
+
+      lastIv = window.crypto.getRandomValues(new Uint8Array(12));
+      const encodedData = encoder.encode(plainText);
+
+      lastCipherBuffer = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: lastIv },
+        cryptoKey,
+        encodedData,
+      );
+
+      if (currentView === "hacker") {
+        outputBox.classList.remove("crypto-widget__box--decrypted");
+        outputLabel.textContent = "🛡️ Перехваченный пакет (AES-GCM Ciphertext)";
+        outputBadge.textContent = "ENCRYPTED";
+        outputBadge.className = "crypto-widget__badge";
+
+        const ivHex = Array.from(lastIv.slice(0, 3))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        const base64Cipher = bufferToBase64(lastCipherBuffer);
+        const formattedCipher = `${ivHex}:${base64Cipher.substring(0, 32)}...`;
+
+        animateTextTransition(formattedCipher);
+      } else {
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: lastIv },
+          cryptoKey,
+          lastCipherBuffer,
+        );
+        const decryptedText = decoder.decode(decryptedBuffer);
+
+        outputBox.classList.add("crypto-widget__box--decrypted");
+        outputLabel.textContent = "✅ Расшифровано (Auth Tag проверен)";
+        outputBadge.textContent = "VERIFIED";
+        outputBadge.className =
+          "crypto-widget__badge crypto-widget__badge--success";
+
+        animateTextTransition(decryptedText);
+      }
+    }
+
+    input.addEventListener("input", () => {
+      isUserInteracting = true;
+      clearTimeout(demoTimeout);
+      processCrypto();
+    });
+
+    input.addEventListener("focus", () => {
+      isUserInteracting = true;
+      clearTimeout(demoTimeout);
+    });
+
+    rotateKeyBtn.addEventListener("click", async () => {
+      await generateRealKey();
+      await processCrypto();
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("crypto-tab--active"));
+        tab.classList.add("crypto-tab--active");
+        currentView = tab.dataset.view;
+        processCrypto();
+      });
+    });
+
+    let phraseIdx = 0;
+    function runAutoDemo() {
+      if (isUserInteracting) return;
+      phraseIdx = (phraseIdx + 1) % demoPhrases.length;
+      const nextPhrase = demoPhrases[phraseIdx];
+      let charIdx = 0;
+      input.value = "";
+
+      const typeInterval = setInterval(() => {
+        if (isUserInteracting) {
+          clearInterval(typeInterval);
+          return;
+        }
+        input.value += nextPhrase[charIdx];
+        charIdx++;
+        processCrypto();
+
+        if (charIdx >= nextPhrase.length) {
+          clearInterval(typeInterval);
+          demoTimeout = setTimeout(runAutoDemo, 4000);
+        }
+      }, 75);
+    }
+
+    generateRealKey().then(() => {
+      processCrypto();
+      demoTimeout = setTimeout(runAutoDemo, 3500);
+    });
+  });
+</script>
 {% endblock %}

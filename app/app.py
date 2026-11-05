@@ -132,9 +132,26 @@ db.init_app(app)
 # Режим debug из переменной окружения
 is_debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
 
-# Вычисляем SRI-хеш scripts.js при старте сервера
+# Динамический расчет SRI-хеша scripts.js с кешированием по mtime
 SCRIPTS_JS_PATH = os.path.join(app.root_path, 'static', 'scripts', 'scripts.js')
-SCRIPTS_JS_SRI = compute_sri_hash(SCRIPTS_JS_PATH) if os.path.exists(SCRIPTS_JS_PATH) else ''
+_sri_cache = {'mtime': 0, 'hash': ''}
+
+
+def get_scripts_js_sri():
+    """Возвращает актуальный SRI-хеш scripts.js. При изменении файла пересчитывает автоматически."""
+    if is_debug:
+        return ''
+    try:
+        if os.path.exists(SCRIPTS_JS_PATH):
+            mtime = os.path.getmtime(SCRIPTS_JS_PATH)
+            if mtime != _sri_cache['mtime']:
+                _sri_cache['mtime'] = mtime
+                _sri_cache['hash'] = compute_sri_hash(SCRIPTS_JS_PATH)
+            return _sri_cache['hash']
+    except Exception as e:
+        security_logger.error(f'Ошибка вычисления SRI-хеша: {e}')
+    return ''
+
 
 # Настройка логирования безопасности
 security_logger = logging.getLogger('security')
@@ -147,16 +164,18 @@ security_logger.addHandler(_handler)
 @app.context_processor
 def inject_sri_hashes():
     """Инъекция SRI-хешей во все шаблоны. В debug-режиме SRI отключается."""
-    if is_debug:
-        return {'scripts_js_hash': ''}  # SRI отключен в debug-режиме
-    return {'scripts_js_hash': SCRIPTS_JS_SRI}
+    return {'scripts_js_hash': get_scripts_js_sri()}
 
 
 @app.route('/sw.js')
 def service_worker():
-    """Service Worker должен обслуживаться из корня для максимального scope."""
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'sw.js',
-                               mimetype='application/javascript')
+    """Service Worker должен обслуживаться из корня для максимального scope без кеширования браузером."""
+    response = send_from_directory(os.path.join(app.root_path, 'static'), 'sw.js',
+                                  mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 socketio = SocketIO(app,
                     cors_allowed_origins=[CORS_ORIGIN],

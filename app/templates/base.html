@@ -35,13 +35,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"
     integrity="sha512-11t8Q+vY9JlCrr+PveZKTYJq8n7O09Y5X/pk/aMd3vJugSvu4xOunGEUzaADqL3I8cZKE/pBwwCfXzDkRJh2sQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="{{ url_for('static', filename='scripts/scripts.js') }}" integrity="{{ scripts_js_hash }}"
+  <script src="{{ url_for('static', filename='scripts/scripts.js') }}?v={{ scripts_js_hash|replace('sha384-', '')|truncate(12, true, '') }}" integrity="{{ scripts_js_hash }}"
     crossorigin="anonymous"></script>
 
   <!-- Регистрация Service Worker + обработка нарушения целостности -->
   <script nonce="{{ csp_nonce() }}">
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then(function (reg) {
+          reg.update();
+        })
         .catch(function () { });
       navigator.serviceWorker.addEventListener('message', function (event) {
         if (event.data && event.data.type === 'INTEGRITY_VIOLATION') {

@@ -47,7 +47,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       circle at 20% 50%,
       rgba(0, 255, 136, 0.1) 0%,
       transparent 50%
@@ -62,11 +63,8 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(
-      2px 2px at 20px 30px,
-      rgba(0, 255, 136, 0.3),
-      transparent
-    ),
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(0, 255, 136, 0.3), transparent),
     radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.2), transparent);
   background-repeat: repeat;
   background-size: 100px 100px;
@@ -162,38 +160,319 @@ body {
   justify-content: center;
   align-items: center;
 }
-.encryption-demo {
+
+/* ======== Interactive Crypto Widget (Welcome Page) ======== */
+.crypto-widget {
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  background: rgba(18, 22, 26, 0.75);
+  backdrop-filter: blur(16px);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(0, 255, 136, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 20px;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.crypto-widget:hover {
+  border-color: rgba(0, 255, 136, 0.4);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.7),
+    0 0 50px rgba(0, 255, 136, 0.14);
+}
+
+/* Шапка виджета */
+.crypto-widget__header {
+  display: flex;
   align-items: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.encryption-demo__message {
-  padding: 16px 20px;
-  background: rgba(0, 255, 136, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+
+.crypto-widget__dots {
+  display: flex;
+  gap: 6px;
 }
-.encryption-demo__message--encrypted {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+
+.crypto-widget__dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
 }
-.message--encrypted {
-  font-family: "Courier New", monospace;
-  font-size: 12px;
+.crypto-widget__dots span:nth-child(1) {
+  background: #ff5f56;
+}
+.crypto-widget__dots span:nth-child(2) {
+  background: #ffbd2e;
+}
+.crypto-widget__dots span:nth-child(3) {
+  background: #27c93f;
+}
+
+.crypto-widget__protocol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
   color: #a0a0a0;
-  word-break: break-all;
 }
-.encryption-demo__arrow {
-  font-size: 24px;
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  background: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff88;
+  animation: pulse 1.5s infinite;
+}
+
+.crypto-widget__key-btn {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.crypto-widget__key-btn:hover {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: #00ff88;
+  transform: translateY(-1px);
+}
+
+.crypto-widget__key-btn:active {
+  transform: scale(0.95);
+}
+
+/* Плашки ввода и вывода */
+.crypto-widget__box {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.crypto-widget__box--sender {
+  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(0, 255, 136, 0.25);
+}
+
+.crypto-widget__box--sender:focus-within {
+  border-color: #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+.crypto-widget__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #8c96a0;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.crypto-widget__input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.crypto-widget__input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+  outline: none;
+}
+
+.crypto-widget__input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Туннель шифрования посередине */
+.crypto-widget__tunnel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: -4px 0;
+}
+
+.tunnel-line {
+  width: 2px;
+  height: 20px;
+  background: rgba(0, 255, 136, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.tunnel-particle {
+  width: 100%;
+  height: 10px;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  position: absolute;
+  top: -10px;
+  animation: dataFlow 1.2s linear infinite;
+}
+
+.tunnel-particle--delayed {
+  animation-delay: 0.6s;
+  background: #00d4ff;
+  box-shadow: 0 0 8px #00d4ff;
+}
+
+@keyframes dataFlow {
+  0% {
+    top: -10px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 20px;
+    opacity: 0;
+  }
+}
+
+.tunnel-core {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 136, 0.15),
+    rgba(0, 212, 255, 0.15)
+  );
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: #00ff88;
-  animation: pulse 2s infinite;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.tunnel-core--active {
+  transform: scale(1.06);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  border-color: #00d4ff;
+}
+
+/* Вкладки Хакер / Получатель */
+.crypto-widget__tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 4px;
+}
+
+.crypto-tab {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.crypto-tab:hover {
+  color: #ccc;
+}
+
+.crypto-tab--active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Вывод шифра */
+.crypto-widget__box--output {
+  background: rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 107, 107, 0.25);
+}
+
+.crypto-widget__box--decrypted {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.crypto-widget__badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff6b6b;
+  letter-spacing: 0.5px;
+}
+
+.crypto-widget__badge--success {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+}
+
+.crypto-widget__cipher {
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #00ff88;
+  word-break: break-all;
+  line-height: 1.5;
+  min-height: 22px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.crypto-widget__box--decrypted .crypto-widget__cipher {
+  font-family: "Inter", sans-serif;
+  color: #00d4ff;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .crypto-widget {
+    padding: 18px;
+    max-width: 100%;
+  }
+  .crypto-widget__protocol {
+    display: none; /* На узких экранах прячем лишнюю надпись, чтобы не теснилось */
+  }
+}
+
 @keyframes pulse {
   0%,
   100% {
@@ -653,7 +932,9 @@ body {
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .search-bar__button:hover {
   transform: translateY(-1px);
@@ -676,7 +957,9 @@ body {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease;
   text-decoration: none;
   color: inherit;
 }
@@ -1147,7 +1430,9 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 .btn-save:hover {
   transform: translateY(-2px);
@@ -1624,7 +1909,9 @@ body {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 .modal--active {
   opacity: 1;
@@ -1640,7 +1927,9 @@ body {
   text-align: center;
   transform: translateY(-20px);
   opacity: 0;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 .modal--active .modal__content {
   transform: translateY(0);
@@ -1808,8 +2097,6 @@ body {
     padding: 20px;
   }
 }
-
-
 
 /* ======== Key Fingerprint ======== */
 .key-fingerprint {

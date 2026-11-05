@@ -2,7 +2,7 @@
 // Этот Service Worker кеширует scripts.js и проверяет его целостность при обновлениях.
 // Если сервер скомпрометирован и JS подменён, SW заблокирует загрузку.
 
-const CACHE_NAME = 'securchat-integrity-v4';
+const CACHE_NAME = 'securchat-integrity-v5';
 const CRITICAL_SCRIPTS = ['/static/scripts/scripts.js'];
 
 // При установке: кешируем текущий scripts.js и сохраняем его хеш
@@ -33,9 +33,17 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// При активации: захватываем все клиенты
+// При активации: удаляем старые кеши и захватываем все клиенты
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      );
+      await self.clients.claim();
+    })()
+  );
 });
 
 // Перехват запросов к критичным скриптам
